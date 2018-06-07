@@ -3,6 +3,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/PMoneda/http"
+  packages = ["."]
+  revision = "7d3f3db132cb972bde99835a120607e86dae5cf6"
+
+[[projects]]
+  branch = "master"
   name = "github.com/gin-contrib/sse"
   packages = ["."]
   revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
@@ -56,6 +62,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0e60faa10a126d4a54833f05f7de4ce828f20e8aca0c905c4f4bec999c37e016"
+  inputs-digest = "965f0d279804f5d8cb391a3d63ea3f5b572b7aeedb60fc96d162a2d238fb5cfb"
   solver-name = "gps-cdcl"
   solver-version = 1

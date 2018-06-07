@@ -1,4 +1,4 @@
-package actions
+package presentation
 
 //CreatePresentationApp on platform
 func CreatePresentationApp() {

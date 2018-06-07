@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/ONSBR/Plataforma-Deployer/api"
+)
 
 func main() {
-	fmt.Println("Hello World")
+	api.Run()
 }
