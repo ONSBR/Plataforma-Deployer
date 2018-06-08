@@ -11,7 +11,7 @@ func Run() {
 	group := router.Group("api/v1.0.0")
 
 	group.POST("/publickey/:solution/:filename", handlers.UploadPublicKey)
-	group.POST("/solution/create", handlers.CreateSolutionHandler)
-
+	group.POST("/solution", handlers.CreateSolutionHandler)
+	group.POST("/solution/:solution/create/app", handlers.InstallAppHandler)
 	router.Run(":6970")
 }

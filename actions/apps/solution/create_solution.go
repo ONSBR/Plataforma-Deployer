@@ -20,7 +20,10 @@ func CreateSolution(solution *models.Solution) *exceptions.Exception {
 }
 
 func createSolutionOnAPICore(solution *models.Solution) *exceptions.Exception {
-	sol := FindSolutionByID(solution.ID)
+	sol, ex := FindSolutionByID(solution.ID)
+	if ex != nil {
+		return ex
+	}
 	if sol != nil {
 		return exceptions.NewInvalidArgumentException(fmt.Errorf("solution %s already exists", solution.ID))
 	}
