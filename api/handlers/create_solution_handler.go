@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/ONSBR/Plataforma-Deployer/actions/apps/solution"
+	"github.com/ONSBR/Plataforma-Deployer/actions/apps"
 	"github.com/ONSBR/Plataforma-Deployer/models"
 	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 	"github.com/gin-gonic/gin"
@@ -16,7 +16,7 @@ func CreateSolutionHandler(c *gin.Context) {
 		c.JSON(ex.Status(), ex)
 		return
 	}
-	ex := solution.CreateSolution(sol)
+	ex := apps.CreateSolution(sol)
 	if ex != nil {
 		c.JSON(ex.Status(), ex)
 		return

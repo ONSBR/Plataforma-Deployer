@@ -2,7 +2,7 @@ package models
 
 //BaseModel should be extended by all platform entities
 type BaseModel struct {
-	ID       string   `json:"id"`
+	ID       string   `json:"id,omitempty"`
 	Metadata Metadata `json:"_metadata"`
 }
 

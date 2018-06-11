@@ -52,6 +52,6 @@ func newException(tag string, httpStatus int, err error) *Exception {
 	ex.StatusCode = httpStatus
 	ex.Message = err.Error()
 	ex.Causes = make([]*Exception, 0, 0)
-	panic(err)
-	//return ex
+
+	return ex
 }

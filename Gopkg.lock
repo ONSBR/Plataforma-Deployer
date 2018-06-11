@@ -48,6 +48,18 @@
   version = "v0.0.3"
 
 [[projects]]
+  name = "github.com/satori/go.uuid"
+  packages = ["."]
+  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
+  version = "v1.2.0"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
+
+[[projects]]
   name = "github.com/smartystreets/assertions"
   packages = [
     ".",
@@ -60,16 +72,9 @@
 [[projects]]
   name = "github.com/smartystreets/goconvey"
   packages = [
-    ".",
+    "convey",
     "convey/gotest",
-    "convey/reporting",
-    "web/server/api",
-    "web/server/contract",
-    "web/server/executor",
-    "web/server/messaging",
-    "web/server/parser",
-    "web/server/system",
-    "web/server/watch"
+    "convey/reporting"
   ]
   revision = "9e8dc3f972df6c8fcc0375ef492c24d0bb204857"
   version = "1.6.3"
@@ -82,8 +87,17 @@
 
 [[projects]]
   branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  revision = "8ac0e0d97ce45cd83d1d7243c060cb8461dda5e9"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "unix",
+    "windows"
+  ]
   revision = "9527bec2660bd847c050fda93a0f0c6dee0800bb"
 
 [[projects]]
@@ -101,6 +115,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "362c1b704dbe02e49514a1549300a783588198f1653e70ada060cdfc196b53a4"
+  inputs-digest = "d07f3ac057f84ddbef2a54b98ce473a5dc43bc9520283a72d4a18bc90f9df392"
   solver-name = "gps-cdcl"
   solver-version = 1
