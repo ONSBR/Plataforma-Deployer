@@ -33,3 +33,18 @@ func FindBySystemID(entity, id string, response interface{}) *exceptions.Excepti
 	}
 	return Query(filter, response)
 }
+
+//FindByProcessID finds entity by ProcessID on apicore
+func FindByProcessID(entity, id string, response interface{}) *exceptions.Exception {
+	filter := Filter{
+		Entity: entity,
+		Map:    "core",
+		Name:   "byProcessId",
+		Params: []Param{Param{
+			Key:   "processId",
+			Value: id,
+		},
+		},
+	}
+	return Query(filter, response)
+}

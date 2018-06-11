@@ -1,4 +1,4 @@
-package domain
+package apps
 
 //CreateDomainApp on platform
 func CreateDomainApp() {

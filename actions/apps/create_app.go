@@ -3,11 +3,8 @@ package apps
 import (
 	"fmt"
 
-	"github.com/ONSBR/Plataforma-Deployer/actions/apps/solution"
-	"github.com/ONSBR/Plataforma-Deployer/git"
-
 	"github.com/ONSBR/Plataforma-Deployer/env"
-
+	"github.com/ONSBR/Plataforma-Deployer/git"
 	"github.com/ONSBR/Plataforma-Deployer/models"
 	"github.com/ONSBR/Plataforma-Deployer/models/dto"
 	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
@@ -23,7 +20,7 @@ func CreateApp(app *models.App) (*dto.CreateAppResponse, *exceptions.Exception) 
 	if ex := checkIfAppExist(app); ex != nil {
 		return nil, ex
 	}
-	solution, err := solution.FindSolutionByID(app.SystemID)
+	solution, err := FindSolutionByID(app.SystemID)
 	if err != nil {
 		return nil, err
 	}

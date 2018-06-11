@@ -1,4 +1,4 @@
-package solution
+package apps
 
 import (
 	"fmt"
