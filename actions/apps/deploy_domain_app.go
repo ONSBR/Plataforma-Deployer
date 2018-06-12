@@ -7,8 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func deployDomainAppWorker(queue chan *models.App) {
-	for app := range queue {
-		log.Info(fmt.Sprintf("Deploying domain app %s", app.Name))
+func deployDomainAppWorker(queue chan *models.Deploy) {
+	for deploy := range queue {
+		log.Info(fmt.Sprintf("Deploying domain app %s", deploy.Name))
 	}
 }

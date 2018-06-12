@@ -12,6 +12,11 @@ func GetGitServerReposPath() string {
 	return Get("GIT_SERVER_PATH", "/home/philippe/git-server/repos")
 }
 
+//GetDeploysPath returns where artifacts will be cloned to be deployed
+func GetDeploysPath() string {
+	return Get("DEPLOY_PATH", "/home/philippe/deploys")
+}
+
 //GetSSHRemoteURL returns git remote url pattern for ssh protocol
 func GetSSHRemoteURL(solution, app string) string {
 	user := Get("GIT_SERVER_USER", "git")

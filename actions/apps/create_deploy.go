@@ -15,11 +15,17 @@ func CreateDeploy(processID string) *exceptions.Exception {
 		deploy.Name = app.Name
 		deploy.ProcessID = app.ID
 		deploy.SystemID = app.SystemID
+		if sol, ex := FindSolutionByID(deploy.SystemID); ex != nil {
+			return ex
+		} else {
+			app.SystemName = sol.Name
+		}
 		if ex := apicore.PersistOne(deploy); ex != nil {
 			return ex
 		}
 		//Async deploy process
-		go DeployApp(app)
+		deploy.App = app
+		go DeployApp(deploy)
 	}
 	return nil
 }

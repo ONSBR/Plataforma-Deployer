@@ -5,15 +5,15 @@ import (
 	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 )
 
-var chProcessApps chan *models.App
-var chDomainApps chan *models.App
-var chPresentationApps chan *models.App
+var chProcessApps chan *models.Deploy
+var chDomainApps chan *models.Deploy
+var chPresentationApps chan *models.Deploy
 
 //RunDeployWorkers starts all listeners to deploy execution
 func RunDeployWorkers(max int) {
-	chProcessApps = make(chan *models.App)
-	chDomainApps = make(chan *models.App)
-	chPresentationApps = make(chan *models.App)
+	chProcessApps = make(chan *models.Deploy)
+	chDomainApps = make(chan *models.Deploy)
+	chPresentationApps = make(chan *models.Deploy)
 
 	for i := 0; i < max; i++ {
 		go deployProcessAppWorker(chProcessApps)
@@ -24,14 +24,14 @@ func RunDeployWorkers(max int) {
 }
 
 //DeployApp at platform based on app type
-func DeployApp(app *models.App) *exceptions.Exception {
-	switch app.Type {
+func DeployApp(deploy *models.Deploy) *exceptions.Exception {
+	switch deploy.App.Type {
 	case "process":
-		chProcessApps <- app
+		chProcessApps <- deploy
 	case "domain":
-		chDomainApps <- app
+		chDomainApps <- deploy
 	case "presentation":
-		chPresentationApps <- app
+		chPresentationApps <- deploy
 	}
 	return nil
 }

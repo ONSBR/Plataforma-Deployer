@@ -10,6 +10,7 @@ type App struct {
 	SystemID    string `json:"systemId,omitempty"`
 	Host        string `json:"host,omitempty"`
 	Port        uint   `json:"port,omitempty"`
+	SystemName  string `json:"-"`
 }
 
 //NewApp builds a new App

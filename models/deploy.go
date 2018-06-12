@@ -10,6 +10,7 @@ type Deploy struct {
 	Version   string `json:"version,omitempty"`
 	Status    string `json:"status,omitempty"`
 	Name      string `json:"name"`
+	App       *App   `json:"-"`
 }
 
 //NewDeploy creates a new deploy pointer

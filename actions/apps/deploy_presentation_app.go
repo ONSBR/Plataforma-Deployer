@@ -7,8 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func deployPresentationAppWorker(queue chan *models.App) {
-	for app := range queue {
-		log.Info(fmt.Sprintf("Deploying presentation app %s", app.Name))
+func deployPresentationAppWorker(queue chan *models.Deploy) {
+	for deploy := range queue {
+		log.Info(fmt.Sprintf("Deploying presentation app %s", deploy.Name))
 	}
 }
