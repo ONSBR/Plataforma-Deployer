@@ -13,5 +13,5 @@ func FindSolutionByID(id string) (*models.Solution, *exceptions.Exception) {
 	if len(list) > 0 {
 		return list[0], nil
 	}
-	return nil, ex
+	return new(models.Solution), ex
 }

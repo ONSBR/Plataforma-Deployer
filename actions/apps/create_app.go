@@ -3,6 +3,7 @@ package apps
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"github.com/ONSBR/Plataforma-Deployer/env"
 	"github.com/ONSBR/Plataforma-Deployer/git"
@@ -24,6 +25,9 @@ func CreateApp(app *models.App) (*dto.CreateAppResponse, *exceptions.Exception) 
 	solution, err := FindSolutionByID(app.SystemID)
 	if err != nil {
 		return nil, err
+	}
+	if solution.Name == "" {
+		return nil, exceptions.NewInvalidArgumentException(fmt.Errorf("No solution found for id %s", app.SystemID))
 	}
 	if err := installApp(app, solution); err != nil {
 		return nil, err
@@ -71,9 +75,20 @@ func installApp(app *models.App, solution *models.Solution) *exceptions.Exceptio
 		return err
 	}
 	if err := createGitRepo(solution.Name, app.Name); err != nil {
+		app.Metadata.ChangeTrack = "destroy"
+		if err1 := apicore.PersistOne(app); err1 != nil {
+			err.AddCause(err1)
+		}
 		return err
 	}
 	if err := setGitHook(app, solution); err != nil {
+		app.Metadata.ChangeTrack = "destroy"
+		if err1 := apicore.PersistOne(app); err1 != nil {
+			err.AddCause(err1)
+		}
+		if err2 := os.RemoveAll(fmt.Sprintf("%s/%s/%s", env.GetGitServerReposPath(), solution.Name, app.Name)); err2 != nil {
+			err.AddCause(err2)
+		}
 		return err
 	}
 	return nil

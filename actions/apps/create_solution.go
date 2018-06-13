@@ -16,7 +16,18 @@ func CreateSolution(solution *models.Solution) *exceptions.Exception {
 	if ex != nil {
 		return ex
 	}
-	return createRootFolderForSolutionOnGit(solution)
+	if ex := createRootFolderForSolutionOnGit(solution); ex != nil {
+		if ex1 := deleteSolutionOnAPICore(solution); ex1 != nil {
+			ex.AddCause(ex1)
+		}
+		return ex
+	}
+	return nil
+}
+
+func deleteSolutionOnAPICore(solution *models.Solution) *exceptions.Exception {
+	solution.Metadata.ChangeTrack = "destroy"
+	return apicore.PersistOne(solution)
 }
 
 func createSolutionOnAPICore(solution *models.Solution) *exceptions.Exception {
@@ -24,7 +35,7 @@ func createSolutionOnAPICore(solution *models.Solution) *exceptions.Exception {
 	if ex != nil {
 		return ex
 	}
-	if sol != nil {
+	if sol.Name != "" {
 		return exceptions.NewInvalidArgumentException(fmt.Errorf("solution %s already exists", solution.ID))
 	}
 	return apicore.PersistOne(solution)
