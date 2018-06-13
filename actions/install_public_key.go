@@ -11,7 +11,7 @@ import (
 
 //InstallPublicKey install user's public key on git-server
 func InstallPublicKey(content []byte, solution, keyName string) (*models.PublicKeyInfo, *exceptions.Exception) {
-	fd, err := os.Create(fmt.Sprintf("%s/%s/%s", env.GetGitServerKeysPath(), solution, keyName))
+	fd, err := os.Create(fmt.Sprintf("%s/%s", env.GetGitServerKeysPath(), keyName))
 	if err != nil {
 		return nil, exceptions.NewComponentException(err)
 	}
