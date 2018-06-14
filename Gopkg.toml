@@ -30,6 +30,10 @@
   name = "github.com/PMoneda/http"
 
 [[constraint]]
+  branch = "master"
+  name = "github.com/PMoneda/whaler"
+
+[[constraint]]
   name = "github.com/gin-gonic/gin"
   version = "1.2.0"
 
@@ -48,11 +52,3 @@
 [prune]
   go-tests = true
   unused-packages = true
-
-[[constraint]]
-  name = "github.com/docker/docker"
-  version = "1.13.1"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/PMoneda/whaler"

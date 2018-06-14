@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/PMoneda/whaler"
   packages = ["."]
-  revision = "9a9fd1cd28cb28e8364862c01577d9b7671f98a5"
+  revision = "175c045fc73836a1a505af0356bf5cb814e230ec"
 
 [[projects]]
   name = "github.com/docker/distribution"
@@ -155,7 +155,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "37a17fe027db43f76fd88b056ddf588563fc8722"
+  revision = "a8fb68e7206f8c78be19b432c58eb52a6aa34462"
 
 [[projects]]
   branch = "master"
@@ -192,6 +192,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eff74df765171103a07c2f55aa1aef725be55c45b8aa8df4438f32e3a0941abf"
+  inputs-digest = "8c132e27d908900ed2ddcfa990d3038ae5392998b097c5a7b0227fbc3d2314c7"
   solver-name = "gps-cdcl"
   solver-version = 1
