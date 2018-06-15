@@ -21,6 +21,7 @@ func NewDeploy() *Deploy {
 		ChangeTrack: "create",
 		Type:        "deploy",
 	}
+	d.Version = uuid.NewV4().String()
 	d.Status = "pending"
 	return d
 }

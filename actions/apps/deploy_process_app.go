@@ -2,9 +2,7 @@ package apps
 
 import (
 	"fmt"
-
-	"github.com/ONSBR/Plataforma-Deployer/env"
-	"github.com/ONSBR/Plataforma-Deployer/git"
+	"io/ioutil"
 
 	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 
@@ -12,24 +10,24 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func deployProcessAppWorker(queue chan *models.Deploy) {
-	for deploy := range queue {
-		log.Info(fmt.Sprintf("Deploying process app %s", deploy.App.Name))
-		context := new(models.DeployContext)
-		context.Info = deploy
-		ex := doProcessDeploy(context)
-		if ex != nil {
-			//muda o status na apicore para aborted
+func deployProcessAppWorker(queue chan *models.DeployContext) {
+	for context := range queue {
+		if ex := context.Deploy(doProcessDeploy); ex != nil {
 			log.Error(ex.Message)
+		} else {
+			log.Info("Finished Deploy")
 		}
 	}
 }
 
 func doProcessDeploy(context *models.DeployContext) *exceptions.Exception {
-	deployPath := fmt.Sprintf("%s/%s", env.GetDeploysPath(), context.Info.SystemID)
-	url := env.GetSSHRemoteURL(context.Info.App.SystemName, context.Info.App.Name)
-	git.CloneRepo(deployPath, url, "master")
-
+	if files, err := ioutil.ReadDir(fmt.Sprintf("%s/%s", context.GetDeployPath(), context.Info.Name)); err != nil {
+		return exceptions.NewComponentException(err)
+	} else {
+		for _, f := range files {
+			log.Info(f.Name())
+		}
+	}
 	/*
 		1) Faz o clone do repositório numa pasta temporaria
 		2) Executa o docker build a partir do Dockerfile
