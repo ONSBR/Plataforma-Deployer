@@ -28,11 +28,6 @@ func doProcessDeploy(context *models.DeployContext) *exceptions.Exception {
 			log.Info(f.Name())
 		}
 	}
-	/*
-		1) Faz o clone do repositório numa pasta temporaria
-		2) Executa o docker build a partir do Dockerfile
-		3) Grava as informações de versão do deploy na APICore e altera o status do deploy para deploying
-		4) Grava as informações de operation na APICore (vide cli atual)
-	*/
+
 	return nil
 }

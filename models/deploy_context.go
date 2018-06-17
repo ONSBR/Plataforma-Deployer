@@ -2,9 +2,11 @@ package models
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/ONSBR/Plataforma-Deployer/env"
 	"github.com/ONSBR/Plataforma-Deployer/git"
@@ -16,6 +18,7 @@ type DeployContext struct {
 	Info     *Deploy
 	RootPath string
 	Version  string
+	Metadata *AppMetadata
 }
 
 //GetImageTag returns docker image name pattern
@@ -51,6 +54,37 @@ func (context *DeployContext) Deploy(builder func(*DeployContext) *exceptions.Ex
 		return ex
 	}
 	return nil
+}
+
+//GetMetadata returns a metadata configuration app
+func (context *DeployContext) GetMetadata() (*AppMetadata, *exceptions.Exception) {
+	meta := NewAppMetadata()
+	path := fmt.Sprintf("%s/metadados", context.RootPath)
+	data, ex := context.readFirstFileInDir(path)
+	if ex != nil {
+		return nil, ex
+	}
+	err := yaml.Unmarshal(data, meta)
+	if err != nil {
+		return nil, exceptions.NewInvalidArgumentException(fmt.Errorf("Invalid yaml format: %s", err.Error()))
+	}
+	context.Metadata = meta
+	return context.Metadata, nil
+}
+
+func (context *DeployContext) readFirstFileInDir(path string) ([]byte, *exceptions.Exception) {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return nil, exceptions.NewComponentException(err)
+	}
+	if len(files) == 0 {
+		return nil, exceptions.NewInvalidArgumentException(fmt.Errorf("no file found in %s", path))
+	}
+	data, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", path, files[0].Name()))
+	if err != nil {
+		return nil, exceptions.NewComponentException(err)
+	}
+	return data, nil
 }
 
 //Cleanup clear artifact deploy folder
