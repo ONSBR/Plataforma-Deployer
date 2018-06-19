@@ -18,11 +18,15 @@ func CreateApp(app *models.App) (*dto.CreateAppResponse, *exceptions.Exception) 
 	if app.ID == "" {
 		return nil, exceptions.NewInvalidArgumentException(fmt.Errorf("id is required"))
 	}
+	solution, err := FindSolutionByID(app.SystemID)
 
 	if ex := checkIfAppExist(app); ex != nil {
-		return nil, ex
+		resp := dto.CreateAppResponse{
+			GitRemote: env.GetSSHRemoteURL(solution.Name, app.Name),
+		}
+		return &resp, nil
 	}
-	solution, err := FindSolutionByID(app.SystemID)
+
 	if err != nil {
 		return nil, err
 	}

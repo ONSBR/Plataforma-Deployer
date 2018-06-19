@@ -22,7 +22,7 @@ func GetDeploysPath() string {
 //GetSSHRemoteURL returns git remote url pattern for ssh protocol
 func GetSSHRemoteURL(solution, app string) string {
 	user := Get("GIT_SERVER_USER", "git")
-	host := Get("GET_SERVER_HOST", "localhost")
+	host := Get("GET_SERVER_EXTERNAL_HOST", "localhost")
 	port := Get("GET_SERVER_PORT", "2222")
 	return fmt.Sprintf("ssh://%s@%s:%s/git-server/repos/%s/%s", user, host, port, solution, app)
 }

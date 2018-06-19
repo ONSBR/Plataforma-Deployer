@@ -16,3 +16,19 @@ func NewAppMap() AppMap {
 	appMap := new(AppMap)
 	return *appMap
 }
+
+type ApiCoreMap struct {
+	BaseModel
+	Name      string `json:"name"`
+	SystemID  string `json:"systemId"`
+	ProcessID string `json:"processId"`
+	Content   string `json:"content"`
+}
+
+func NewApiCoreMap() *ApiCoreMap {
+	m := new(ApiCoreMap)
+	m.Metadata = Metadata{
+		Type: "map",
+	}
+	return m
+}
