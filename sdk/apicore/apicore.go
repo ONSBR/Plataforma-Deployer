@@ -14,7 +14,7 @@ func getURL() string {
 }
 
 //Persist data on APICORE
-func Persist(entities []interface{}) *exceptions.Exception {
+func Persist(entities interface{}) *exceptions.Exception {
 	_, err := http.Post(fmt.Sprintf("%s/core/persist", getURL()), entities)
 	if err != nil {
 		return exceptions.NewIntegrationException(err)
@@ -23,10 +23,8 @@ func Persist(entities []interface{}) *exceptions.Exception {
 }
 
 //PersistOne single entity to API Core
-func PersistOne(entity interface{}) *exceptions.Exception {
-	list := make([]interface{}, 1)
-	list[0] = entity
-	return Persist(list)
+func PersistOne(entity ...interface{}) *exceptions.Exception {
+	return Persist(entity)
 }
 
 //Query data on apicore

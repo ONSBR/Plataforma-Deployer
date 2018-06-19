@@ -13,6 +13,21 @@ type App struct {
 	SystemName  string `json:"-"`
 }
 
+//IsDomain check if app is a domain app
+func (app App) IsDomain() bool {
+	return app.Type == "domain"
+}
+
+//IsProcess check if app is a process app
+func (app App) IsProcess() bool {
+	return app.Type == "process"
+}
+
+//IsPresentation check if app is a presentation app
+func (app App) IsPresentation() bool {
+	return app.Type == "presentation"
+}
+
 //NewApp builds a new App
 func NewApp() *App {
 	app := new(App)

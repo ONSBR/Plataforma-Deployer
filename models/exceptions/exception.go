@@ -46,12 +46,10 @@ func newException(tag string, httpStatus int, err error) *Exception {
 	if err == nil {
 		return nil
 	}
-
 	ex := new(Exception)
 	ex.ErrorTag = tag
 	ex.StatusCode = httpStatus
 	ex.Message = err.Error()
 	ex.Causes = make([]*Exception, 0, 0)
-
 	return ex
 }
