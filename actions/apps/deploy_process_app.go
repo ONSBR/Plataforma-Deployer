@@ -1,10 +1,8 @@
 package apps
 
 import (
-	"fmt"
-	"io/ioutil"
-
 	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
+	"github.com/ONSBR/Plataforma-Deployer/sdk/eventmanager"
 
 	"github.com/ONSBR/Plataforma-Deployer/models"
 	log "github.com/sirupsen/logrus"
@@ -12,22 +10,30 @@ import (
 
 func deployProcessAppWorker(queue chan *models.DeployContext) {
 	for context := range queue {
-		if ex := context.Deploy(doProcessDeploy); ex != nil {
+		ex := context.Deploy(doProcessDeploy)
+		if ex != nil {
+			if ex := context.UpdateDeployStatus("error"); ex != nil {
+				log.Error(ex)
+			}
 			log.Error(ex.Message)
 		} else {
 			log.Info("Finished Deploy")
+			if ex := context.UpdateDeployStatus("success"); ex != nil {
+				log.Error(ex)
+			}
 		}
+
+		evt := eventmanager.Event{
+			Name:    "system.deploy.finished",
+			Payload: context.GetSummary(),
+		}
+		if ex := eventmanager.Push(&evt); ex != nil {
+			log.Error(ex)
+		}
+
 	}
 }
 
 func doProcessDeploy(context *models.DeployContext) *exceptions.Exception {
-	if files, err := ioutil.ReadDir(fmt.Sprintf("%s/%s", context.GetDeployPath(), context.Info.Name)); err != nil {
-		return exceptions.NewComponentException(err)
-	} else {
-		for _, f := range files {
-			log.Info(f.Name())
-		}
-	}
-
 	return nil
 }

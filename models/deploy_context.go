@@ -31,11 +31,35 @@ type DeployContext struct {
 	MapName     string
 	MapContent  string
 	ContainerID string
+	Error       *exceptions.Exception
+}
+
+type DeploySummary struct {
+	ID        string `json:"deployId"`
+	ProcessID string `json:"processId"`
+	SystemID  string `json:"systemId"`
+	Status    string `json:"status"`
+	Error     string `json:"error,omitempty"`
 }
 
 //GetDockerfilePath returns a path to app Dockerfile
 func (context *DeployContext) GetDockerfilePath() string {
 	return fmt.Sprintf("%s/Dockerfile", context.RootPath)
+}
+
+func (context *DeployContext) GetSummary() DeploySummary {
+	summary := DeploySummary{
+		ID:        context.Info.ID,
+		ProcessID: context.Info.ProcessID,
+		SystemID:  context.Info.SystemID,
+	}
+	status := "success"
+	if context.Error != nil {
+		status = "error"
+		summary.Error = context.Error.Message
+	}
+	summary.Status = status
+	return summary
 }
 
 //GetImageTag returns docker image name pattern
@@ -69,34 +93,54 @@ func (context *DeployContext) Deploy(builder func(*DeployContext) *exceptions.Ex
 	context.RootPath = fmt.Sprintf("%s/%s", context.GetDeployPath(), context.Info.Name)
 
 	if ex := context.Clone(); ex != nil {
+		context.Error = ex
 		return ex
 	}
 	if !context.Info.App.IsDomain() {
 		if ex := context.SaveAppMap(); ex != nil {
+			context.Error = ex
 			return ex
 		}
 		if ex := context.SaveDependencyDomain(); ex != nil {
+			context.Error = ex
 			return ex
 		}
 		if ex := context.SaveMetadata(); ex != nil {
+			context.Error = ex
 			return ex
 		}
 	}
 
 	if ex := context.BuildImage(); ex != nil {
+		context.Error = ex
 		return ex
 	}
 
 	if !context.Info.App.IsProcess() {
 		if ex := context.StartApp(); ex != nil {
+			context.Error = ex
 			return ex
 		}
 	}
 
 	if ex := builder(context); ex != nil {
+		context.Error = ex
 		return ex
 	}
 	if ex := context.Cleanup(); ex != nil {
+		context.Error = ex
+		return ex
+	}
+	return nil
+}
+
+func (context *DeployContext) UpdateDeployStatus(status string) *exceptions.Exception {
+	dep := NewDeploy()
+	dep.ID = context.Info.ID
+	dep.Status = status
+	dep.Metadata.ChangeTrack = "update"
+	if ex := apicore.PersistOne(dep); ex != nil {
+		context.Error = ex
 		return ex
 	}
 	return nil
@@ -108,11 +152,10 @@ func (context *DeployContext) BuildImage() *exceptions.Exception {
 			PathContext: context.RootPath,
 			Tag:         context.GetImageName(""),
 		}
-		out, err := whaler.BuildImageWithDockerfile(cnf)
+		_, err := whaler.BuildImageWithDockerfile(cnf)
 		if err != nil {
 			return exceptions.NewComponentException(err)
 		}
-		log.Info(out)
 		return nil
 	}
 	if ex := build(""); ex != nil {
@@ -171,7 +214,6 @@ func (context *DeployContext) SaveDependencyDomain() *exceptions.Exception {
 			list = append(list, dd)
 		}
 	}
-	log.Info(list)
 	return apicore.Persist(list)
 }
 

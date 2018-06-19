@@ -5,11 +5,11 @@ import uuid "github.com/satori/go.uuid"
 //Deploy is the entity to manage deploys on apicore
 type Deploy struct {
 	BaseModel
-	SystemID  string `json:"systemId"`
-	ProcessID string `json:"processId"`
+	SystemID  string `json:"systemId,omitempty"`
+	ProcessID string `json:"processId,omitempty"`
 	Version   string `json:"version,omitempty"`
 	Status    string `json:"status,omitempty"`
-	Name      string `json:"name"`
+	Name      string `json:"name,omitempty"`
 	App       *App   `json:"-"`
 }
 
