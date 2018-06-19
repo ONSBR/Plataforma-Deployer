@@ -19,6 +19,12 @@ type DeployContext struct {
 	RootPath string
 	Version  string
 	Metadata *AppMetadata
+	Map      AppMap
+}
+
+//GetDockerfilePath returns a path to app Dockerfile
+func (context *DeployContext) GetDockerfilePath() string {
+	return fmt.Sprintf("%s/Dockerfile", context.RootPath)
 }
 
 //GetImageTag returns docker image name pattern
@@ -70,6 +76,22 @@ func (context *DeployContext) GetMetadata() (*AppMetadata, *exceptions.Exception
 	}
 	context.Metadata = meta
 	return context.Metadata, nil
+}
+
+//GetAppMap returns a domain map defined by app
+func (context *DeployContext) GetAppMap() (AppMap, *exceptions.Exception) {
+	mapApp := NewAppMap()
+	path := fmt.Sprintf("%s/mapa", context.RootPath)
+	data, ex := context.readFirstFileInDir(path)
+	if ex != nil {
+		return nil, ex
+	}
+	err := yaml.Unmarshal(data, &mapApp)
+	if err != nil {
+		return nil, exceptions.NewInvalidArgumentException(fmt.Errorf("Invalid yaml format: %s", err.Error()))
+	}
+	context.Map = mapApp
+	return context.Map, nil
 }
 
 func (context *DeployContext) readFirstFileInDir(path string) ([]byte, *exceptions.Exception) {
