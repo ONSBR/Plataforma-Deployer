@@ -150,11 +150,17 @@ func (context *DeployContext) BuildImage() *exceptions.Exception {
 	build := func(worker string) *exceptions.Exception {
 		cnf := whaler.BuildImageConfig{
 			PathContext: context.RootPath,
-			Tag:         context.GetImageName(""),
+			Tag:         context.GetImageName(worker),
 		}
 		_, err := whaler.BuildImageWithDockerfile(cnf)
 		if err != nil {
 			return exceptions.NewComponentException(err)
+		}
+		str, err := whaler.Publish(context.GetImageName(worker), "docker", "docker")
+		if err != nil {
+			return exceptions.NewComponentException(err)
+		} else {
+			log.Info(str)
 		}
 		return nil
 	}
@@ -297,9 +303,9 @@ func (context *DeployContext) SaveMetadata() *exceptions.Exception {
 
 func (context *DeployContext) GetImageName(worker string) string {
 	if worker != "" {
-		return fmt.Sprintf("registry:5000/%s_%s:%s", context.Info.App.Name, worker, context.Version)
+		return fmt.Sprintf("localhost:5000/%s_%s:%s", context.Info.App.Name, worker, context.Version)
 	}
-	return fmt.Sprintf("registry:5000/%s:%s", context.Info.App.Name, context.Version)
+	return fmt.Sprintf("localhost:5000/%s:%s", context.Info.App.Name, context.Version)
 }
 
 func (context *DeployContext) GetContainerName() string {

@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/PMoneda/whaler"
   packages = ["."]
-  revision = "175c045fc73836a1a505af0356bf5cb814e230ec"
+  revision = "eadd71d9ca947e48470811dbef98c55ee41bc1c3"
 
 [[projects]]
   name = "github.com/docker/distribution"
@@ -88,6 +88,12 @@
   packages = ["proto"]
   revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
   version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/google/uuid"
+  packages = ["."]
+  revision = "064e2069ce9c359c118179501254f67d7d37ba24"
+  version = "0.2"
 
 [[projects]]
   branch = "master"
@@ -192,6 +198,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "99e872aa6b5e5c2ce32f165a0d923f0b75890f88a6337523a8e440f9a2ae14c5"
+  inputs-digest = "cfdb6a46886fd07030b83c605aabb556b6ffad4fd78dfee18df772cbc3013527"
   solver-name = "gps-cdcl"
   solver-version = 1

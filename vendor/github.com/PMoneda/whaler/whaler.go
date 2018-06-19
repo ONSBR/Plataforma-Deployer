@@ -3,6 +3,8 @@ package whaler
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -214,4 +216,34 @@ func StartContainer(id string) error {
 	}
 	return cli.ContainerStart(context.Background(), id, types.ContainerStartOptions{})
 
+}
+
+//Publish image to registry
+func Publish(image, username, password string) (string, error) {
+	auth := types.AuthConfig{
+		Username: username,
+		Password: password,
+	}
+	encodedJSON, err := json.Marshal(auth)
+	if err != nil {
+		return "", err
+	}
+	encoded := base64.StdEncoding.EncodeToString(encodedJSON)
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		return "", err
+	}
+
+	out, err := cli.ImagePush(context.Background(), image, types.ImagePushOptions{
+		All:          true,
+		RegistryAuth: encoded,
+	})
+	if err != nil {
+		return "", err
+	}
+	if b, err := ioutil.ReadAll(out); err != nil {
+		return "", err
+	} else {
+		return string(b), nil
+	}
 }

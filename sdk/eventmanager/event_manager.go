@@ -5,7 +5,7 @@ import (
 
 	"github.com/ONSBR/Plataforma-Deployer/env"
 	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
-	"github.com/http"
+	"github.com/PMoneda/http"
 )
 
 func getURL() string {
