@@ -75,6 +75,9 @@ func (context *DeployContext) Deploy(builder func(*DeployContext) *exceptions.Ex
 		if ex := context.SaveAppMap(); ex != nil {
 			return ex
 		}
+		if ex := context.SaveDependencyDomain(); ex != nil {
+			return ex
+		}
 		if ex := context.SaveMetadata(); ex != nil {
 			return ex
 		}
@@ -149,9 +152,27 @@ func (context *DeployContext) StartApp() *exceptions.Exception {
 	return nil
 }
 
-func (context *DeployContext) SaveDomainDependency() *exceptions.Exception {
-
-	return nil
+func (context *DeployContext) SaveDependencyDomain() *exceptions.Exception {
+	log.Info("saving dependency domain")
+	list := make([]*DependencyDomain, 0)
+	if ex := apicore.FindByProcessID(NewDependencyDomain().Metadata.Type, context.Info.ProcessID, &list); ex != nil {
+		return ex
+	}
+	for k, v := range context.Map {
+		for _, f := range v.Filters {
+			dd := NewDependencyDomain()
+			dd.Metadata.ChangeTrack = "create"
+			dd.AppName = context.Info.App.Name
+			dd.Entity = k
+			dd.ProcessID = context.Info.ProcessID
+			dd.SystemID = context.Info.SystemID
+			dd.Version = context.Version
+			dd.Filter = f
+			list = append(list, dd)
+		}
+	}
+	log.Info(list)
+	return apicore.Persist(list)
 }
 
 func (context *DeployContext) GetEnvVars() []string {
