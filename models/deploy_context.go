@@ -156,11 +156,8 @@ func (context *DeployContext) BuildImage() *exceptions.Exception {
 		if err != nil {
 			return exceptions.NewComponentException(err)
 		}
-		str, err := whaler.Publish(context.GetImageName(worker), "docker", "docker")
-		if err != nil {
+		if _, err := whaler.Publish(context.GetImageName(worker), "docker", "docker"); err != nil {
 			return exceptions.NewComponentException(err)
-		} else {
-			log.Info(str)
 		}
 		return nil
 	}
