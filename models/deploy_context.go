@@ -11,6 +11,7 @@ import (
 	"github.com/PMoneda/whaler"
 
 	"github.com/ONSBR/Plataforma-Deployer/sdk/apicore"
+	"github.com/ONSBR/Plataforma-Deployer/sdk/eventmanager"
 	"github.com/google/uuid"
 
 	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
@@ -72,6 +73,11 @@ func (context *DeployContext) GetDeployPath() string {
 	return fmt.Sprintf("%s/%s", env.GetDeploysPath(), context.Info.App.SystemName)
 }
 
+//GetWorkspace returns the location of current deploying app
+func (context *DeployContext) GetWorkspace() string {
+	return fmt.Sprintf("%s/%s", context.GetDeployPath(), context.Info.App.Name)
+}
+
 //Clone sourcecode from git
 func (context *DeployContext) Clone() *exceptions.Exception {
 	deployPath := context.GetDeployPath()
@@ -83,6 +89,28 @@ func (context *DeployContext) Clone() *exceptions.Exception {
 	return nil
 }
 
+func (context *DeployContext) Start(builder func(*DeployContext) *exceptions.Exception) {
+	ex := context.Deploy(builder)
+	if ex != nil {
+		if ex := context.UpdateDeployStatus("error"); ex != nil {
+			log.Error(ex)
+		}
+		log.Error(ex.Message)
+	} else {
+		log.Info("Finished Deploy")
+		if ex := context.UpdateDeployStatus("success"); ex != nil {
+			log.Error(ex)
+		}
+	}
+	evt := eventmanager.Event{
+		Name:    "system.deploy.finished",
+		Payload: context.GetSummary(),
+	}
+	if ex := eventmanager.Push(&evt); ex != nil {
+		log.Error(ex)
+	}
+}
+
 //Deploy register the function that will build the app and wrap with clone and cleanup procedures
 func (context *DeployContext) Deploy(builder func(*DeployContext) *exceptions.Exception) *exceptions.Exception {
 	_version, err := uuid.NewUUID()
@@ -91,11 +119,19 @@ func (context *DeployContext) Deploy(builder func(*DeployContext) *exceptions.Ex
 	}
 	context.Version = _version.String()
 	context.RootPath = fmt.Sprintf("%s/%s", context.GetDeployPath(), context.Info.Name)
-
+	if ex := context.Cleanup(); ex != nil {
+		context.Error = ex
+		return ex
+	}
 	if ex := context.Clone(); ex != nil {
 		context.Error = ex
 		return ex
 	}
+	if ex := builder(context); ex != nil {
+		context.Error = ex
+		return ex
+	}
+
 	if !context.Info.App.IsDomain() {
 		if ex := context.SaveAppMap(); ex != nil {
 			context.Error = ex
@@ -121,15 +157,6 @@ func (context *DeployContext) Deploy(builder func(*DeployContext) *exceptions.Ex
 			context.Error = ex
 			return ex
 		}
-	}
-
-	if ex := builder(context); ex != nil {
-		context.Error = ex
-		return ex
-	}
-	if ex := context.Cleanup(); ex != nil {
-		context.Error = ex
-		return ex
 	}
 	return nil
 }
@@ -377,6 +404,9 @@ func (context *DeployContext) Cleanup() *exceptions.Exception {
 	deployPath := context.GetDeployPath()
 	log.Info("Cleaning artifact folder")
 	if err := os.RemoveAll(deployPath); err != nil {
+		return exceptions.NewComponentException(err)
+	}
+	if err := os.RemoveAll(fmt.Sprintf("%s/%s", env.GetDeploysPath(), context.Info.ID)); err != nil {
 		return exceptions.NewComponentException(err)
 	}
 	return nil
