@@ -89,6 +89,18 @@ func (context *DeployContext) Clone() *exceptions.Exception {
 	return nil
 }
 
+//RemoveContainer removes docker container
+func (context *DeployContext) RemoveContainer(name string) *exceptions.Exception {
+	if container, err := whaler.FindContainerByIdentifier("/"+name, true); err == nil {
+		if err := whaler.RemoveContainer(container.ID, true); err != nil {
+			return exceptions.NewComponentException(err)
+		}
+		return nil
+	} else {
+		return exceptions.NewComponentException(err)
+	}
+}
+
 func (context *DeployContext) Start(builder func(*DeployContext) *exceptions.Exception) {
 	ex := context.Deploy(builder)
 	if ex != nil {
@@ -191,9 +203,6 @@ func (context *DeployContext) BuildImage() *exceptions.Exception {
 	if ex := build(""); ex != nil {
 		return ex
 	}
-	if context.Info.App.IsDomain() {
-		return build("worker")
-	}
 	return nil
 }
 
@@ -251,6 +260,9 @@ func (context *DeployContext) GetEnvVars() []string {
 	if context.Info.App.IsPresentation() {
 		return []string{"API_MODE=true", fmt.Sprintf("SYSTEM_ID=%s", context.Info.SystemID)}
 	}
+	if context.Info.App.IsDomain() {
+		return []string{"DOMAIN_API=1"}
+	}
 	return nil
 }
 
@@ -286,7 +298,11 @@ func (context *DeployContext) SaveMetadata() *exceptions.Exception {
 	if ex != nil {
 		return ex
 	}
-	operations := make([]*OperationCore, len(meta.Operations))
+	return context.PersistOperations(meta.Operations)
+}
+
+func (context *DeployContext) PersistOperations(ops []*Operation) *exceptions.Exception {
+	operations := make([]*OperationCore, len(ops))
 	i := 0
 	list := make([]*OperationCore, 0)
 	if ex := apicore.FindByProcessID("operation", context.Info.ProcessID, &list); ex != nil {
@@ -305,11 +321,15 @@ func (context *DeployContext) SaveMetadata() *exceptions.Exception {
 		}
 		return nil
 	}
-	for _, op := range meta.Operations {
+	for _, op := range ops {
 		coreOp := NewOperationCore()
 		coreOp.Metadata.ChangeTrack = "create"
 		coreOp.EventIn = op.Event
-		coreOp.EventOut = context.Info.Name + ".done"
+		if context.Info.App.IsDomain() {
+			coreOp.EventOut = strings.Replace(op.Event, "request", "done", 1)
+		} else {
+			coreOp.EventOut = context.Info.Name + ".done"
+		}
 		coreOp.Name = op.Name
 		coreOp.Commit = op.Commit
 		coreOp.ProcessID = context.Info.ProcessID
@@ -406,8 +426,10 @@ func (context *DeployContext) Cleanup() *exceptions.Exception {
 	if err := os.RemoveAll(deployPath); err != nil {
 		return exceptions.NewComponentException(err)
 	}
-	if err := os.RemoveAll(fmt.Sprintf("%s/%s", env.GetDeploysPath(), context.Info.ID)); err != nil {
-		return exceptions.NewComponentException(err)
+	if context.Info.App.IsDomain() {
+		if err := os.RemoveAll(fmt.Sprintf("%s/%s", env.GetDeploysPath(), context.Info.ID)); err != nil {
+			return exceptions.NewComponentException(err)
+		}
 	}
 	return nil
 }

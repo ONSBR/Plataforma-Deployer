@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/PMoneda/whaler"
   packages = ["."]
-  revision = "eadd71d9ca947e48470811dbef98c55ee41bc1c3"
+  revision = "e092c4284112725cd156c08477014ccea21f65c8"
 
 [[projects]]
   name = "github.com/docker/distribution"

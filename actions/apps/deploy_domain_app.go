@@ -11,7 +11,6 @@ import (
 	"github.com/ONSBR/Plataforma-Deployer/git"
 	"github.com/ONSBR/Plataforma-Deployer/models"
 	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
-	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -27,31 +26,50 @@ func deployDomainAppWorker(queue chan *models.DeployContext) {
 }
 
 func doDomainDeploy(context *models.DeployContext) *exceptions.Exception {
-	//Faz o clone do template
-	//Renderiza o template
+	context.RemoveContainer(context.GetContainerName())
 	if ex := downloadTemplate(context); ex != nil {
-		log.Info(ex.Message)
+		return ex
+	} else if entities, ex := loadDomainEntities(context); ex != nil {
+		return ex
+	} else if ex := compileApp(context, entities); ex != nil {
+		return ex
+	} else if ex := saveDomainPersistOperation(context); ex != nil {
 		return ex
 	}
-	if entities, ex := loadDomainEntities(context); ex != nil {
-		return ex
+	return nil
+}
+
+func saveDomainPersistOperation(context *models.DeployContext) *exceptions.Exception {
+	return context.PersistOperations([]*models.Operation{
+		&models.Operation{
+			Event:  fmt.Sprintf("%s.persist.request", context.Info.App.SystemID),
+			Name:   fmt.Sprintf("%s.persist", context.Info.App.Name),
+			Commit: true,
+		},
+		&models.Operation{
+			Event:  fmt.Sprintf("%s.merge.request", context.Info.App.SystemID),
+			Name:   fmt.Sprintf("%s.merge", context.Info.App.Name),
+			Commit: true,
+		},
+	})
+}
+
+func compileApp(context *models.DeployContext, entities []models.AppModel) *exceptions.Exception {
+	if compiled, err := compile(context, entities); err != nil {
+		return err
 	} else {
-		if compiled, err := compile(context, entities); err != nil {
-			return err
+		path := fmt.Sprintf("%s/domain.py", getModelPath(context))
+		fd, err := os.Open(path)
+		if err == nil {
+			os.Remove(path)
 		} else {
-			path := fmt.Sprintf("%s/domain.py", getModelPath(context))
-			fd, err := os.Open(path)
-			if err == nil {
-				os.Remove(path)
-			} else {
-				fd.Close()
-			}
-			if err := ioutil.WriteFile(path, []byte(compiled), 0666); err != nil {
-				return exceptions.NewComponentException(err)
-			}
-			//redirect deployer to point to compiled app instead of domain app
-			context.RootPath = getAppPath(context)
+			fd.Close()
 		}
+		if err := ioutil.WriteFile(path, []byte(compiled), 0666); err != nil {
+			return exceptions.NewComponentException(err)
+		}
+		//redirect deployer to point to compiled app instead of domain app
+		context.RootPath = getAppPath(context)
 	}
 	return nil
 }
