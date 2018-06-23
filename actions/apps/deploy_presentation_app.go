@@ -12,5 +12,6 @@ func deployPresentationAppWorker(queue chan *models.DeployContext) {
 }
 
 func doPresentationDeploy(context *models.DeployContext) *exceptions.Exception {
-	return context.RemoveContainer(context.GetContainerName())
+	context.RemoveContainer(context.GetContainerName())
+	return nil
 }
