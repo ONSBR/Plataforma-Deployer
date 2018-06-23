@@ -24,5 +24,6 @@ func InstallPublicKey(content []byte, solution, keyName string) (*models.PublicK
 	info.Name = keyName
 	info.Solution = solution
 	info.Ok()
+
 	return info, nil
 }
