@@ -1,14 +1,16 @@
 package apps
 
 import (
-	"fmt"
-
 	"github.com/ONSBR/Plataforma-Deployer/models"
-	log "github.com/sirupsen/logrus"
+	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 )
 
 func deployPresentationAppWorker(queue chan *models.DeployContext) {
-	for deploy := range queue {
-		log.Info(fmt.Sprintf("Deploying presentation app %s", deploy.Info.Name))
+	for context := range queue {
+		context.Start(doPresentationDeploy)
 	}
+}
+
+func doPresentationDeploy(context *models.DeployContext) *exceptions.Exception {
+	return context.RemoveContainer(context.GetContainerName())
 }

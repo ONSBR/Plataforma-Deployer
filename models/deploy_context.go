@@ -24,15 +24,14 @@ import (
 
 //DeployContext is the entity to manage all deploy steps
 type DeployContext struct {
-	Info        *Deploy
-	RootPath    string
-	Version     string
-	Metadata    *AppMetadata
-	Map         AppMap
-	MapName     string
-	MapContent  string
-	ContainerID string
-	Error       *exceptions.Exception
+	Info       *Deploy
+	RootPath   string
+	Version    string
+	Metadata   *AppMetadata
+	Map        AppMap
+	MapName    string
+	MapContent string
+	Error      *exceptions.Exception
 }
 
 type DeploySummary struct {
@@ -177,6 +176,9 @@ func (context *DeployContext) UpdateDeployStatus(status string) *exceptions.Exce
 	dep := NewDeploy()
 	dep.ID = context.Info.ID
 	dep.Status = status
+	dep.Version = context.Version
+	dep.Image = context.GetImageName("")
+	dep.ContainerID = context.Info.ContainerID
 	dep.Metadata.ChangeTrack = "update"
 	if ex := apicore.PersistOne(dep); ex != nil {
 		context.Error = ex
@@ -227,7 +229,7 @@ func (context *DeployContext) StartApp() *exceptions.Exception {
 	if err != nil {
 		return exceptions.NewComponentException(err)
 	}
-	context.ContainerID = id
+	context.Info.ContainerID = id
 	if err := whaler.StartContainer(id); err != nil {
 		return exceptions.NewComponentException(err)
 	}
