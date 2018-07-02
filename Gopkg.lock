@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/PMoneda/http"
   packages = ["."]
-  revision = "7d3f3db132cb972bde99835a120607e86dae5cf6"
+  revision = "f89b0e7a09b085ad3a9939614812fefa0fe827bd"
 
 [[projects]]
   branch = "master"
