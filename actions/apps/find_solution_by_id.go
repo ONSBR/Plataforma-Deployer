@@ -2,12 +2,11 @@ package apps
 
 import (
 	"github.com/ONSBR/Plataforma-Deployer/models"
-	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 	"github.com/ONSBR/Plataforma-Deployer/sdk/apicore"
 )
 
 //FindSolutionByID looks for solution on apicore
-func FindSolutionByID(id string) (*models.Solution, *exceptions.Exception) {
+func FindSolutionByID(id string) (*models.Solution, error) {
 	list := make([]*models.Solution, 1)
 	ex := apicore.FindByID("system", id, &list)
 	if len(list) > 0 {

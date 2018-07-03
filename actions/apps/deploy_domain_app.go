@@ -10,7 +10,6 @@ import (
 
 	"github.com/ONSBR/Plataforma-Deployer/git"
 	"github.com/ONSBR/Plataforma-Deployer/models"
-	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -25,7 +24,7 @@ func deployDomainAppWorker(queue chan *models.DeployContext) {
 	}
 }
 
-func doDomainDeploy(context *models.DeployContext) *exceptions.Exception {
+func doDomainDeploy(context *models.DeployContext) error {
 	context.RemoveContainer(context.GetContainerName())
 	if ex := downloadTemplate(context); ex != nil {
 		return ex
@@ -39,7 +38,7 @@ func doDomainDeploy(context *models.DeployContext) *exceptions.Exception {
 	return nil
 }
 
-func saveDomainPersistOperation(context *models.DeployContext) *exceptions.Exception {
+func saveDomainPersistOperation(context *models.DeployContext) error {
 	return context.PersistOperations([]*models.Operation{
 		&models.Operation{
 			Event:  fmt.Sprintf("%s.persist.request", context.Info.App.SystemID),
@@ -54,7 +53,7 @@ func saveDomainPersistOperation(context *models.DeployContext) *exceptions.Excep
 	})
 }
 
-func compileApp(context *models.DeployContext, entities []models.AppModel) *exceptions.Exception {
+func compileApp(context *models.DeployContext, entities []models.AppModel) error {
 	if compiled, err := compile(context, entities); err != nil {
 		return err
 	} else {
@@ -66,7 +65,7 @@ func compileApp(context *models.DeployContext, entities []models.AppModel) *exce
 			fd.Close()
 		}
 		if err := ioutil.WriteFile(path, []byte(compiled), 0666); err != nil {
-			return exceptions.NewComponentException(err)
+			return err
 		}
 		//redirect deployer to point to compiled app instead of domain app
 		context.RootPath = getAppPath(context)
@@ -82,11 +81,11 @@ func getAppPath(context *models.DeployContext) string {
 	return fmt.Sprintf("%s/Plataforma-Domain/Platform.App/python-template", getTemplatePath(context))
 }
 
-func compile(context *models.DeployContext, list []models.AppModel) (string, *exceptions.Exception) {
+func compile(context *models.DeployContext, list []models.AppModel) (string, error) {
 	template := fmt.Sprintf("%s/domain_remote.tmpl", getModelPath(context))
 	data, err := ioutil.ReadFile(template)
 	if err != nil {
-		return "", exceptions.NewComponentException(err)
+		return "", err
 	}
 	tmpl := templateData{
 		DatabaseName: strings.ToLower(context.Info.App.SystemName),
@@ -100,22 +99,22 @@ func compile(context *models.DeployContext, list []models.AppModel) (string, *ex
 	return applyTemplate(string(data), tmpl)
 }
 
-func applyTemplate(appTemplate string, data templateData) (string, *exceptions.Exception) {
+func applyTemplate(appTemplate string, data templateData) (string, error) {
 	buf := bytes.NewBufferString("")
 	tmpl := template.Must(template.New(appTemplate).Funcs(templateHelpers).Parse(appTemplate))
 	err := tmpl.Execute(buf, data)
 	if err != nil {
-		return "", exceptions.NewComponentException(err)
+		return "", err
 	}
 	return buf.String(), nil
 }
 
-func loadDomainEntities(context *models.DeployContext) ([]models.AppModel, *exceptions.Exception) {
+func loadDomainEntities(context *models.DeployContext) ([]models.AppModel, error) {
 	path := fmt.Sprintf("%s/Dominio", context.GetWorkspace())
 	if files, err := ioutil.ReadDir(path); err != nil {
-		return nil, exceptions.NewComponentException(err)
+		return nil, err
 	} else if len(files) == 0 {
-		return nil, exceptions.NewInvalidArgumentException(fmt.Errorf("No entity description found in app"))
+		return nil, fmt.Errorf("No entity description found in app")
 	} else {
 		list := make([]models.AppModel, 0)
 		for _, f := range files {
@@ -123,11 +122,11 @@ func loadDomainEntities(context *models.DeployContext) ([]models.AppModel, *exce
 				continue
 			}
 			if data, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", path, f.Name())); err != nil {
-				return nil, exceptions.NewComponentException(err)
+				return nil, err
 			} else {
 				appmodel := make(models.AppModel)
 				if err := yaml.Unmarshal(data, &appmodel); err != nil {
-					return nil, exceptions.NewInvalidArgumentException(err)
+					return nil, err
 				}
 				list = append(list, appmodel)
 			}
@@ -140,7 +139,7 @@ func getTemplatePath(context *models.DeployContext) string {
 	return fmt.Sprintf("/worker/deploys/%s", context.Info.ID)
 }
 
-func downloadTemplate(context *models.DeployContext) *exceptions.Exception {
+func downloadTemplate(context *models.DeployContext) error {
 	path := getTemplatePath(context)
 	fd, err := os.Open(path)
 	if err == nil {

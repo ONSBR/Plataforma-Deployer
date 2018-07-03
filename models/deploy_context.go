@@ -15,7 +15,6 @@ import (
 	"github.com/ONSBR/Plataforma-EventManager/domain"
 	"github.com/google/uuid"
 
-	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/ONSBR/Plataforma-Deployer/env"
@@ -32,7 +31,7 @@ type DeployContext struct {
 	Map        AppMap
 	MapName    string
 	MapContent string
-	Error      *exceptions.Exception
+	Error      error
 }
 
 type DeploySummary struct {
@@ -69,7 +68,7 @@ func (context *DeployContext) GetSummary() DeploySummary {
 	status := "success"
 	if context.Error != nil {
 		status = "error"
-		summary.Error = context.Error.Message
+		summary.Error = context.Error.Error()
 	}
 	summary.Status = status
 	return summary
@@ -91,7 +90,7 @@ func (context *DeployContext) GetWorkspace() string {
 }
 
 //Clone sourcecode from git
-func (context *DeployContext) Clone() *exceptions.Exception {
+func (context *DeployContext) Clone() error {
 	deployPath := context.GetDeployPath()
 	url := fmt.Sprintf("%s/%s/%s", env.GetGitServerReposPath(), context.Info.App.SystemName, context.Info.Name)
 	log.Info(fmt.Sprintf("Clonning code from %s to %s", url, deployPath))
@@ -102,24 +101,21 @@ func (context *DeployContext) Clone() *exceptions.Exception {
 }
 
 //RemoveContainer removes docker container
-func (context *DeployContext) RemoveContainer(name string) *exceptions.Exception {
+func (context *DeployContext) RemoveContainer(name string) error {
 	if container, err := whaler.FindContainerByIdentifier("/"+name, true); err == nil {
-		if err := whaler.RemoveContainer(container.ID, true); err != nil {
-			return exceptions.NewComponentException(err)
-		}
-		return nil
+		return whaler.RemoveContainer(container.ID, true)
 	} else {
-		return exceptions.NewComponentException(err)
+		return err
 	}
 }
 
-func (context *DeployContext) Start(builder func(*DeployContext) *exceptions.Exception) {
+func (context *DeployContext) Start(builder func(*DeployContext) error) {
 	ex := context.Deploy(builder)
 	if ex != nil {
 		if ex := context.UpdateDeployStatus("error"); ex != nil {
 			log.Error(ex)
 		}
-		log.Error(ex.Message)
+		log.Error(ex)
 	} else {
 		log.Info("Finished Deploy")
 		if ex := context.UpdateDeployStatus("success"); ex != nil {
@@ -136,10 +132,10 @@ func (context *DeployContext) Start(builder func(*DeployContext) *exceptions.Exc
 }
 
 //Deploy register the function that will build the app and wrap with clone and cleanup procedures
-func (context *DeployContext) Deploy(builder func(*DeployContext) *exceptions.Exception) *exceptions.Exception {
+func (context *DeployContext) Deploy(builder func(*DeployContext) error) error {
 	_version, err := uuid.NewUUID()
 	if err != nil {
-		return exceptions.NewComponentException(err)
+		return err
 	}
 	context.Version = _version.String()
 	context.RootPath = fmt.Sprintf("%s/%s", context.GetDeployPath(), context.Info.Name)
@@ -185,7 +181,7 @@ func (context *DeployContext) Deploy(builder func(*DeployContext) *exceptions.Ex
 	return nil
 }
 
-func (context *DeployContext) UpdateDeployStatus(status string) *exceptions.Exception {
+func (context *DeployContext) UpdateDeployStatus(status string) error {
 	dep := NewDeploy()
 	dep.ID = context.Info.ID
 	dep.Status = status
@@ -200,18 +196,18 @@ func (context *DeployContext) UpdateDeployStatus(status string) *exceptions.Exce
 	return nil
 }
 
-func (context *DeployContext) BuildImage() *exceptions.Exception {
-	build := func(worker string) *exceptions.Exception {
+func (context *DeployContext) BuildImage() error {
+	build := func(worker string) error {
 		cnf := whaler.BuildImageConfig{
 			PathContext: context.RootPath,
 			Tag:         context.GetImageName(worker),
 		}
 		_, err := whaler.BuildImageWithDockerfile(cnf)
 		if err != nil {
-			return exceptions.NewComponentException(err)
+			return err
 		}
 		if _, err := whaler.Publish(context.GetImageName(worker), "docker", "docker"); err != nil {
-			return exceptions.NewComponentException(err)
+			return err
 		}
 		return nil
 	}
@@ -221,7 +217,7 @@ func (context *DeployContext) BuildImage() *exceptions.Exception {
 	return nil
 }
 
-func (context *DeployContext) StartApp() *exceptions.Exception {
+func (context *DeployContext) StartApp() error {
 	externalPort := "8087"
 	if context.Info.App.IsPresentation() {
 		externalPort = "8088"
@@ -240,16 +236,16 @@ func (context *DeployContext) StartApp() *exceptions.Exception {
 	log.Info(cnf)
 	id, err := whaler.CreateContainer(cnf)
 	if err != nil {
-		return exceptions.NewComponentException(err)
+		return err
 	}
 	context.Info.ContainerID = id
 	if err := whaler.StartContainer(id); err != nil {
-		return exceptions.NewComponentException(err)
+		return err
 	}
 	return nil
 }
 
-func (context *DeployContext) SaveDependencyDomain() *exceptions.Exception {
+func (context *DeployContext) SaveDependencyDomain() error {
 	log.Info("saving dependency domain")
 	list := make([]*DependencyDomain, 0)
 	if ex := apicore.FindByProcessID(NewDependencyDomain().Metadata.Type, context.Info.ProcessID, &list); ex != nil {
@@ -293,7 +289,7 @@ func (context *DeployContext) GetDebugPort() string {
 }
 
 //GetMetadata returns a metadata configuration app
-func (context *DeployContext) GetMetadata() (*AppMetadata, *exceptions.Exception) {
+func (context *DeployContext) GetMetadata() (*AppMetadata, error) {
 	meta := NewAppMetadata()
 	path := fmt.Sprintf("%s/metadados", context.RootPath)
 	data, _, ex := context.readFirstFileInDir(path)
@@ -302,13 +298,13 @@ func (context *DeployContext) GetMetadata() (*AppMetadata, *exceptions.Exception
 	}
 	err := yaml.Unmarshal(data, meta)
 	if err != nil {
-		return nil, exceptions.NewInvalidArgumentException(fmt.Errorf("Invalid yaml format: %s", err.Error()))
+		return nil, fmt.Errorf("Invalid yaml format: %s", err.Error())
 	}
 	context.Metadata = meta
 	return context.Metadata, nil
 }
 
-func (context *DeployContext) SaveMetadata() *exceptions.Exception {
+func (context *DeployContext) SaveMetadata() error {
 	meta, ex := context.GetMetadata()
 	if ex != nil {
 		return ex
@@ -316,18 +312,18 @@ func (context *DeployContext) SaveMetadata() *exceptions.Exception {
 	return context.PersistOperations(meta.Operations)
 }
 
-func (context *DeployContext) PersistOperations(ops []*Operation) *exceptions.Exception {
+func (context *DeployContext) PersistOperations(ops []*Operation) error {
 	operations := make([]*OperationCore, len(ops))
 	i := 0
 	list := make([]*OperationCore, 0)
 	if ex := apicore.FindByProcessID("operation", context.Info.ProcessID, &list); ex != nil {
 		return ex
 	}
-	setID := func(op *OperationCore) *exceptions.Exception {
+	setID := func(op *OperationCore) error {
 		for _, o := range list {
 			if o.EventIn == op.EventIn {
 				if o.ProcessID != op.ProcessID {
-					return exceptions.NewInvalidArgumentException(fmt.Errorf("Conflict event in operation %s is already mapped to app %s", op.EventIn, o.Name))
+					return fmt.Errorf("Conflict event in operation %s is already mapped to app %s", op.EventIn, o.Name)
 				}
 				op.ID = o.ID
 				op.Metadata.ChangeTrack = "update"
@@ -340,10 +336,10 @@ func (context *DeployContext) PersistOperations(ops []*Operation) *exceptions.Ex
 		coreOp := NewOperationCore()
 		coreOp.Metadata.ChangeTrack = "create"
 		coreOp.EventIn = op.Event
-		if context.Info.App.IsDomain() {
+		if strings.HasSuffix(op.Event, ".request") {
 			coreOp.EventOut = strings.Replace(op.Event, "request", "done", 1)
 		} else {
-			coreOp.EventOut = context.Info.Name + ".done"
+			coreOp.EventOut = op.Event + ".done"
 		}
 		coreOp.Name = op.Name
 		coreOp.Commit = op.Commit
@@ -376,7 +372,7 @@ func (context *DeployContext) GetContainerName() string {
 }
 
 //SaveAppMap saves application map to apicore
-func (context *DeployContext) SaveAppMap() *exceptions.Exception {
+func (context *DeployContext) SaveAppMap() error {
 	_, ex := context.GetAppMap()
 	if ex != nil {
 		return ex
@@ -400,7 +396,7 @@ func (context *DeployContext) SaveAppMap() *exceptions.Exception {
 }
 
 //GetAppMap returns a domain map defined by app
-func (context *DeployContext) GetAppMap() (AppMap, *exceptions.Exception) {
+func (context *DeployContext) GetAppMap() (AppMap, error) {
 	mapApp := NewAppMap()
 	path := fmt.Sprintf("%s/mapa", context.RootPath)
 	log.Info(path)
@@ -410,7 +406,7 @@ func (context *DeployContext) GetAppMap() (AppMap, *exceptions.Exception) {
 	}
 	err := yaml.Unmarshal(data, &mapApp)
 	if err != nil {
-		return nil, exceptions.NewInvalidArgumentException(fmt.Errorf("Invalid yaml format: %s", err.Error()))
+		return nil, fmt.Errorf("Invalid yaml format: %s", err.Error())
 	}
 	context.Map = mapApp
 	context.MapContent = string(data)
@@ -419,31 +415,31 @@ func (context *DeployContext) GetAppMap() (AppMap, *exceptions.Exception) {
 	return context.Map, nil
 }
 
-func (context *DeployContext) readFirstFileInDir(path string) ([]byte, string, *exceptions.Exception) {
+func (context *DeployContext) readFirstFileInDir(path string) ([]byte, string, error) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		return nil, "", exceptions.NewComponentException(err)
+		return nil, "", err
 	}
 	if len(files) == 0 {
-		return nil, "", exceptions.NewInvalidArgumentException(fmt.Errorf("no file found in %s", path))
+		return nil, "", fmt.Errorf("no file found in %s", path)
 	}
 	data, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", path, files[0].Name()))
 	if err != nil {
-		return nil, "", exceptions.NewComponentException(err)
+		return nil, "", err
 	}
 	return data, files[0].Name(), nil
 }
 
 //Cleanup clear artifact deploy folder
-func (context *DeployContext) Cleanup() *exceptions.Exception {
+func (context *DeployContext) Cleanup() error {
 	deployPath := context.GetDeployPath()
 	log.Info("Cleaning artifact folder")
 	if err := os.RemoveAll(deployPath); err != nil {
-		return exceptions.NewComponentException(err)
+		return err
 	}
 	if context.Info.App.IsDomain() {
 		if err := os.RemoveAll(fmt.Sprintf("%s/%s", env.GetDeploysPath(), context.Info.ID)); err != nil {
-			return exceptions.NewComponentException(err)
+			return err
 		}
 	}
 	return nil

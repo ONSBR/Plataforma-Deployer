@@ -11,13 +11,13 @@
   branch = "feature/reprocessamento"
   name = "github.com/ONSBR/Plataforma-EventManager"
   packages = ["domain"]
-  revision = "0f9acd5dd1b7567a5fb2e407036aef84ee7792ad"
+  revision = "11ca13fd570f397491f284f32219c2d8d7f8f4c8"
 
 [[projects]]
   branch = "master"
   name = "github.com/PMoneda/http"
   packages = ["."]
-  revision = "f89b0e7a09b085ad3a9939614812fefa0fe827bd"
+  revision = "07abd5e307d947064debbb4f0e945a2aa4087774"
 
 [[projects]]
   branch = "master"

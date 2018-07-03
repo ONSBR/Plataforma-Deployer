@@ -1,8 +1,6 @@
 package apps
 
 import (
-	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
-
 	"github.com/ONSBR/Plataforma-Deployer/models"
 )
 
@@ -12,6 +10,6 @@ func deployProcessAppWorker(queue chan *models.DeployContext) {
 	}
 }
 
-func doProcessDeploy(context *models.DeployContext) *exceptions.Exception {
+func doProcessDeploy(context *models.DeployContext) error {
 	return nil
 }

@@ -9,7 +9,7 @@ import (
 func DeployAppHandler(c *gin.Context) {
 	processID := c.Param("processID")
 	if ex := apps.CreateDeploy(processID); ex != nil {
-		c.JSON(ex.Status(), ex)
+		c.JSON(500, ex)
 	} else {
 		c.Status(202)
 	}

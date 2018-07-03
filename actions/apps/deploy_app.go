@@ -2,7 +2,6 @@ package apps
 
 import (
 	"github.com/ONSBR/Plataforma-Deployer/models"
-	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 )
 
 var chProcessApps chan *models.DeployContext
@@ -24,7 +23,7 @@ func RunDeployWorkers(max int) {
 }
 
 //DeployApp at platform based on app type
-func DeployApp(deploy *models.Deploy) *exceptions.Exception {
+func DeployApp(deploy *models.Deploy) error {
 	context := new(models.DeployContext)
 	context.Info = deploy
 	switch deploy.App.Type {

@@ -12,7 +12,7 @@ func InstallAppHandler(c *gin.Context) {
 	c.Bind(app)
 	app.SystemID = c.Param("solution")
 	if resp, ex := apps.CreateApp(app); ex != nil {
-		c.JSON(ex.Status(), ex)
+		c.JSON(500, ex)
 	} else {
 		c.JSON(200, resp)
 	}

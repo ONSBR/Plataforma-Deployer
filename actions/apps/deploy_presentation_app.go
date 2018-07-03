@@ -2,7 +2,6 @@ package apps
 
 import (
 	"github.com/ONSBR/Plataforma-Deployer/models"
-	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 )
 
 func deployPresentationAppWorker(queue chan *models.DeployContext) {
@@ -11,7 +10,7 @@ func deployPresentationAppWorker(queue chan *models.DeployContext) {
 	}
 }
 
-func doPresentationDeploy(context *models.DeployContext) *exceptions.Exception {
+func doPresentationDeploy(context *models.DeployContext) error {
 	context.RemoveContainer(context.GetContainerName())
 	return nil
 }
