@@ -12,6 +12,7 @@ import (
 
 	"github.com/ONSBR/Plataforma-Deployer/sdk/apicore"
 	"github.com/ONSBR/Plataforma-Deployer/sdk/eventmanager"
+	"github.com/ONSBR/Plataforma-EventManager/domain"
 	"github.com/google/uuid"
 
 	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
@@ -40,6 +41,18 @@ type DeploySummary struct {
 	SystemID  string `json:"systemId"`
 	Status    string `json:"status"`
 	Error     string `json:"error,omitempty"`
+}
+
+func (summary DeploySummary) ToEventPayload() map[string]interface{} {
+	_map := make(map[string]interface{})
+	_map["deployId"] = summary.ID
+	_map["processId"] = summary.ProcessID
+	_map["systemId"] = summary.SystemID
+	_map["status"] = summary.Status
+	if summary.Error != "" {
+		_map["error"] = summary.Error
+	}
+	return _map
 }
 
 //GetDockerfilePath returns a path to app Dockerfile
@@ -113,9 +126,9 @@ func (context *DeployContext) Start(builder func(*DeployContext) *exceptions.Exc
 			log.Error(ex)
 		}
 	}
-	evt := eventmanager.Event{
+	evt := domain.Event{
 		Name:    "system.deploy.finished",
-		Payload: context.GetSummary(),
+		Payload: context.GetSummary().ToEventPayload(),
 	}
 	if ex := eventmanager.Push(&evt); ex != nil {
 		log.Error(ex)

@@ -1,0 +1,12 @@
+PUT http://localhost:8081/sendevent
+
+{
+    "name": "event.test",
+    "payload":{
+      "name":"client name",
+      "balance":100
+    }
+}
+
+
+
