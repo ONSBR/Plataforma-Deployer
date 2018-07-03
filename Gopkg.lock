@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/Jeffail/gabs"
-  packages = ["."]
-  revision = "7a0fed31069aba77993a518cc2f37b28ee7aa883"
-  version = "1.1"
-
-[[projects]]
   name = "github.com/Microsoft/go-winio"
   packages = ["."]
   revision = "7da180ee92d8bd8bb8c37fc560e673e6557c392f"
@@ -16,21 +10,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/ONSBR/Plataforma-EventManager"
-  packages = [
-    ".",
-    "actions",
-    "api",
-    "bus",
-    "domain",
-    "eventstore",
-    "flow",
-    "handlers",
-    "handlers/middlewares",
-    "infra",
-    "infra/factories",
-    "processor",
-    "sdk"
-  ]
+  packages = ["domain"]
   revision = "b61e6b9a3c9262b10c82b47cfa25ef252aba73e2"
 
 [[projects]]
@@ -140,13 +120,6 @@
   version = "v0.0.3"
 
 [[projects]]
-  branch = "feature/topic-permissions"
-  name = "github.com/michaelklishin/rabbit-hole"
-  packages = ["."]
-  revision = "1ffa18cc2b8dce965a836e8b1c72fa97e0ac8a20"
-  source = "github.com/PMoneda/rabbit-hole"
-
-[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
@@ -183,12 +156,6 @@
   ]
   revision = "9e8dc3f972df6c8fcc0375ef492c24d0bb204857"
   version = "1.6.3"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/streadway/amqp"
-  packages = ["."]
-  revision = "e5adc2ada8b8efff032bf61173a233d143e9318e"
 
 [[projects]]
   name = "github.com/ugorji/go"
@@ -237,6 +204,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9f0efc762bc00480ad43345ca2fc04d0b857ed6bf039820e6262cc63b7107815"
+  inputs-digest = "165a43a500b2cac52747e6e5202259b9bbaf09547c99750ce13c9dc6318c4683"
   solver-name = "gps-cdcl"
   solver-version = 1
