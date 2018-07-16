@@ -2,6 +2,7 @@ package domain
 
 import (
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -17,23 +18,48 @@ var SystemEvents = []string{
 	"system.deploy.finished",
 }
 
+//Events ia a lista of pointers to Event that implements sort interface
+type Events []*Event
+
+func (s Events) Len() int {
+	return len(s)
+}
+func (s Events) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+func (s Events) Less(i, j int) bool {
+	a := s[i]
+	b := s[j]
+	ta, err := a.GetTimestamp()
+	if err != nil {
+		return false
+	}
+	tb, err := b.GetTimestamp()
+	if err != nil {
+		return false
+	}
+
+	return tb.After(ta)
+}
+
 //Event define a basic platform event contract
 type Event struct {
-	Timestamp    string                 `json:"timestamp"`
-	Branch       string                 `json:"branch"`
-	SystemID     string                 `json:"systemId,omitempty"`
-	Name         string                 `json:"name,omitempty"`
-	Version      string                 `json:"version,omitempty"`
-	Image        string                 `json:"image,omitempty"`
-	Tag          string                 `json:"tag"`
-	AppOrigin    string                 `json:"appOrigin,omitempty"`
-	Owner        string                 `json:"owner,omitempty"`
-	InstanceID   string                 `json:"instanceId,omitempty"`
-	Scope        string                 `json:"scope,omitempty"`
-	Payload      map[string]interface{} `json:"payload,omitempty"`
-	Reproduction map[string]interface{} `json:"reproduction,omitempty"`
-	Reprocessing *ReprocessingInfo      `json:"reprocessing,omitempty"`
-	Bindings     []*Operation           `json:"-"`
+	Timestamp      string                 `json:"timestamp"`
+	Branch         string                 `json:"branch"`
+	SystemID       string                 `json:"systemId,omitempty"`
+	Name           string                 `json:"name,omitempty"`
+	Version        string                 `json:"version,omitempty"`
+	Image          string                 `json:"image,omitempty"`
+	IdempotencyKey string                 `json:"idempotencyKey"`
+	Tag            string                 `json:"tag"`
+	AppOrigin      string                 `json:"appOrigin,omitempty"`
+	Owner          string                 `json:"owner,omitempty"`
+	InstanceID     string                 `json:"instanceId,omitempty"`
+	Scope          string                 `json:"scope,omitempty"`
+	Payload        map[string]interface{} `json:"payload,omitempty"`
+	Reproduction   map[string]interface{} `json:"reproduction,omitempty"`
+	Reprocessing   *ReprocessingInfo      `json:"reprocessing,omitempty"`
+	Bindings       []*Operation           `json:"-"`
 }
 
 //ReprocessingInfo store all reprocessing information on event
@@ -62,6 +88,12 @@ func (e *Event) ToCeleryMessage() *CeleryMessage {
 	return getCeleryMessage(e)
 }
 
+//GetTimestamp returns a parsed timestamp event value
+func (e *Event) GetTimestamp() (time.Time, error) {
+	t, err := time.Parse("2006-01-02T15:04:05.999", e.Timestamp)
+	return t, err
+}
+
 //ApplyDefaultFields apply default fields for branch, scope and tag
 func (e *Event) ApplyDefaultFields() {
 	if e.Branch == "" {
@@ -71,8 +103,8 @@ func (e *Event) ApplyDefaultFields() {
 		e.Scope = "execution"
 	}
 	if e.Tag == "" {
-		uuid, _ := uuid.NewUUID()
-		e.Tag = uuid.String()
+		u, _ := uuid.NewUUID()
+		e.Tag = u.String()
 	}
 }
 

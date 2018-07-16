@@ -58,5 +58,5 @@
   version = "2.2.1"
 
 [[constraint]]
-  branch = "feature/reprocessamento"
+  branch = "master"
   name = "github.com/ONSBR/Plataforma-EventManager"

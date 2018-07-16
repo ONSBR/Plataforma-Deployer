@@ -4,14 +4,14 @@
 [[projects]]
   name = "github.com/Microsoft/go-winio"
   packages = ["."]
-  revision = "7da180ee92d8bd8bb8c37fc560e673e6557c392f"
-  version = "v0.4.7"
+  revision = "a6d595ae73cf27a1b8fc32930668708f45ce1c85"
+  version = "v0.4.9"
 
 [[projects]]
-  branch = "feature/reprocessamento"
+  branch = "master"
   name = "github.com/ONSBR/Plataforma-EventManager"
   packages = ["domain"]
-  revision = "11ca13fd570f397491f284f32219c2d8d7f8f4c8"
+  revision = "511618718072faf90e16b2e060954cb828a73927"
 
 [[projects]]
   branch = "master"
@@ -105,7 +105,7 @@
   branch = "master"
   name = "github.com/gopherjs/gopherjs"
   packages = ["js"]
-  revision = "8dffc02ea1cb8398bb73f30424697c60fcf8d4c5"
+  revision = "0892b62f0d9fb5857760c3cfca837207185117ee"
 
 [[projects]]
   name = "github.com/jtolds/gls"
@@ -134,8 +134,8 @@
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
+  revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
+  version = "v1.0.6"
 
 [[projects]]
   name = "github.com/smartystreets/assertions"
@@ -167,7 +167,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "a8fb68e7206f8c78be19b432c58eb52a6aa34462"
+  revision = "a2144134853fc9a27a7b1e3eb4f19f1a76df13c9"
 
 [[projects]]
   branch = "master"
@@ -178,7 +178,7 @@
     "internal/socks",
     "proxy"
   ]
-  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
+  revision = "a680a1efc54dd51c040b3b5ce4939ea3cf2ea0d1"
 
 [[projects]]
   branch = "master"
@@ -187,7 +187,7 @@
     "unix",
     "windows"
   ]
-  revision = "8883426083c04a2627e6e59d84d5f6fb63d16c91"
+  revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
 
 [[projects]]
   name = "gopkg.in/go-playground/validator.v8"
@@ -204,6 +204,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9c7f69ca14fecda944f7c9ef13041b586680dd9e9628bc61b680ca51d88eb638"
+  inputs-digest = "165a43a500b2cac52747e6e5202259b9bbaf09547c99750ce13c9dc6318c4683"
   solver-name = "gps-cdcl"
   solver-version = 1

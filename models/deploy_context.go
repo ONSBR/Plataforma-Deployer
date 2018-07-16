@@ -343,6 +343,7 @@ func (context *DeployContext) PersistOperations(ops []*Operation) error {
 		}
 		coreOp.Name = op.Name
 		coreOp.Commit = op.Commit
+		coreOp.Reprocessable = context.Map.HasFilters() || !op.SkipReprocessing
 		coreOp.ProcessID = context.Info.ProcessID
 		coreOp.SystemID = context.Info.SystemID
 		coreOp.Version = context.Version
