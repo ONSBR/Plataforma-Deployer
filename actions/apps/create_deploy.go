@@ -2,12 +2,11 @@ package apps
 
 import (
 	"github.com/ONSBR/Plataforma-Deployer/models"
-	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 	"github.com/ONSBR/Plataforma-Deployer/sdk/apicore"
 )
 
 //CreateDeploy at apicore
-func CreateDeploy(processID string) *exceptions.Exception {
+func CreateDeploy(processID string) error {
 	if app, ex := FindAppByID(processID); ex != nil {
 		return ex
 	} else {

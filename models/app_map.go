@@ -8,6 +8,15 @@ type EntityMap struct {
 	Filters map[string]string
 }
 
+func (m AppMap) HasFilters() bool {
+	for _, v := range m {
+		if len(v.Filters) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 type MapField struct {
 	Column string
 }

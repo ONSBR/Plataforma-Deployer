@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/ONSBR/Plataforma-Deployer/env"
-	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 	"github.com/ONSBR/Plataforma-EventManager/domain"
 	"github.com/PMoneda/http"
 )
@@ -14,10 +13,10 @@ func getURL() string {
 }
 
 //Push event to event manager
-func Push(evt *domain.Event) *exceptions.Exception {
+func Push(evt *domain.Event) error {
 	_, err := http.Put(fmt.Sprintf("%s/sendevent", getURL()), evt)
 	if err != nil {
-		return exceptions.NewComponentException(err)
+		return err
 	}
 	return nil
 }

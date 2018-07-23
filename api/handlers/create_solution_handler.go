@@ -3,7 +3,6 @@ package handlers
 import (
 	"github.com/ONSBR/Plataforma-Deployer/actions/apps"
 	"github.com/ONSBR/Plataforma-Deployer/models"
-	"github.com/ONSBR/Plataforma-Deployer/models/exceptions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,13 +11,12 @@ func CreateSolutionHandler(c *gin.Context) {
 	sol := models.NewSolution()
 	err := c.BindJSON(sol)
 	if err != nil {
-		ex := exceptions.NewInvalidArgumentException(err)
-		c.JSON(ex.Status(), ex)
+		c.JSON(500, err)
 		return
 	}
 	ex := apps.CreateSolution(sol)
 	if ex != nil {
-		c.JSON(ex.Status(), ex)
+		c.JSON(400, ex)
 		return
 	}
 	c.JSON(201, gin.H{"message": "solution created"})

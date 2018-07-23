@@ -7,9 +7,10 @@ type AppMetadata struct {
 
 //Operation defines app binding configuration
 type Operation struct {
-	Name   string
-	Event  string
-	Commit bool
+	Name             string
+	Event            string
+	Commit           bool
+	SkipReprocessing bool `yaml:"skip_reprocessing"`
 }
 
 //NewAppMetadata returns a new instance of AppMetadata
