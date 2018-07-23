@@ -32,6 +32,9 @@ func Query(filter Filter, response interface{}) error {
 	for _, param := range filter.Params {
 		url += fmt.Sprintf("&%s=%s", param.Key, param.Value)
 	}
+	if filter.Page > 0 && filter.PageSize > 0 {
+		url += fmt.Sprintf("&page=%d&page_size=%d", filter.Page, filter.PageSize)
+	}
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
