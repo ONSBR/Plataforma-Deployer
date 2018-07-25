@@ -32,6 +32,7 @@ type ApiCoreMap struct {
 	SystemID  string `json:"systemId"`
 	ProcessID string `json:"processId"`
 	Content   string `json:"content"`
+	Version   string `json:"version"`
 }
 
 func NewApiCoreMap() *ApiCoreMap {

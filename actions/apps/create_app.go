@@ -18,20 +18,19 @@ func CreateApp(app *models.App) (*dto.CreateAppResponse, error) {
 		return nil, fmt.Errorf("id is required")
 	}
 	solution, err := FindSolutionByID(app.SystemID)
-
+	if err != nil {
+		return nil, err
+	}
+	if solution == nil {
+		return nil, fmt.Errorf("solution not found")
+	}
 	if ex := checkIfAppExist(app); ex != nil {
 		resp := dto.CreateAppResponse{
 			GitRemote: env.GetSSHRemoteURL(solution.Name, app.Name),
 		}
 		return &resp, nil
 	}
-
-	if err != nil {
-		return nil, err
-	}
-	if solution.Name == "" {
-		return nil, fmt.Errorf("No solution found for id %s", app.SystemID)
-	}
+	app.SystemName = solution.Name
 	if err := installApp(app, solution); err != nil {
 		return nil, err
 	}
@@ -74,6 +73,13 @@ exec curl -X POST %s://%s:%s/api/v1.0.0/app/%s/deploy -d ''
 }
 
 func installApp(app *models.App, solution *models.Solution) error {
+	if app.IsDomain() {
+		app.Host = app.SystemName + "-" + app.Name
+		app.Port = 9110
+	} else if app.IsPresentation() {
+		app.Host = app.SystemName + "-" + app.Name
+		app.Port = 8088
+	}
 	if err := apicore.PersistOne(app); err != nil {
 		return err
 	}

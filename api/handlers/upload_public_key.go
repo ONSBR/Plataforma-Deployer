@@ -6,6 +6,7 @@ import (
 	"github.com/ONSBR/Plataforma-Deployer/actions"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 //UploadPublicKey uploads users's public key to git-server
@@ -18,6 +19,7 @@ func UploadPublicKey(c *gin.Context) {
 	}
 	info, ex := actions.InstallPublicKey(data, c.Param("solution"), c.Param("filename"))
 	if ex != nil {
+		log.Error(ex)
 		c.JSON(400, ex)
 		return
 	}

@@ -314,25 +314,7 @@ func (context *DeployContext) SaveMetadata() error {
 
 func (context *DeployContext) PersistOperations(ops []*Operation) error {
 	operations := make([]*OperationCore, len(ops))
-	i := 0
-	list := make([]*OperationCore, 0)
-	if ex := apicore.FindByProcessID("operation", context.Info.ProcessID, &list); ex != nil {
-		return ex
-	}
-	setID := func(op *OperationCore) error {
-		for _, o := range list {
-			if o.EventIn == op.EventIn {
-				if o.ProcessID != op.ProcessID {
-					return fmt.Errorf("Conflict event in operation %s is already mapped to app %s", op.EventIn, o.Name)
-				}
-				op.ID = o.ID
-				op.Metadata.ChangeTrack = "update"
-				return nil
-			}
-		}
-		return nil
-	}
-	for _, op := range ops {
+	for i, op := range ops {
 		coreOp := NewOperationCore()
 		coreOp.Metadata.ChangeTrack = "create"
 		coreOp.EventIn = op.Event
@@ -348,11 +330,7 @@ func (context *DeployContext) PersistOperations(ops []*Operation) error {
 		coreOp.SystemID = context.Info.SystemID
 		coreOp.Version = context.Version
 		coreOp.Image = context.GetImageName("")
-		if ex := setID(coreOp); ex != nil {
-			return ex
-		}
 		operations[i] = coreOp
-		i++
 	}
 	return apicore.Persist(operations)
 }
@@ -382,17 +360,9 @@ func (context *DeployContext) SaveAppMap() error {
 	apiCoreMap.ProcessID = context.Info.ProcessID
 	apiCoreMap.SystemID = context.Info.SystemID
 	apiCoreMap.Name = context.MapName
+	apiCoreMap.Version = context.Version
 	apiCoreMap.Content = context.MapContent
-	existingMap := make([]*ApiCoreMap, 0)
-	if ex := apicore.FindByProcessID("map", context.Info.ProcessID, &existingMap); ex != nil {
-		return ex
-	}
-	if len(existingMap) == 0 {
-		apiCoreMap.Metadata.ChangeTrack = "create"
-	} else {
-		apiCoreMap.ID = existingMap[0].ID
-		apiCoreMap.Metadata.ChangeTrack = "update"
-	}
+	apiCoreMap.Metadata.ChangeTrack = "create"
 	return apicore.PersistOne(apiCoreMap)
 }
 

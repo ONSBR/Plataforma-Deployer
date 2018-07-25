@@ -146,7 +146,7 @@ func downloadTemplate(context *models.DeployContext) error {
 		fd.Close()
 		os.RemoveAll(path)
 	}
-	if ex := git.CloneRepo(getTemplatePath(context), "https://github.com/ONSBR/Plataforma-Domain", "feature/deploy-remoto"); ex != nil {
+	if ex := git.CloneRepo(getTemplatePath(context), "https://github.com/ONSBR/Plataforma-Domain", "master"); ex != nil {
 		return ex
 	}
 	return nil
