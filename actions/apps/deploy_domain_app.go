@@ -88,7 +88,7 @@ func compile(context *models.DeployContext, list []models.AppModel) (string, err
 		return "", err
 	}
 	tmpl := templateData{
-		DatabaseName: strings.ToLower(context.Info.App.SystemName),
+		DatabaseName: strings.ToLower(context.Info.App.Name),
 	}
 	tmpl.Models = make(models.AppModel)
 	for _, mod := range list {
