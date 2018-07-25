@@ -34,6 +34,8 @@ func doDomainDeploy(context *models.DeployContext) error {
 		return ex
 	} else if ex := saveDomainPersistOperation(context); ex != nil {
 		return ex
+	} else if ex := copyConfigfile(context); ex != nil {
+		return ex
 	}
 	return nil
 }
@@ -67,6 +69,7 @@ func compileApp(context *models.DeployContext, entities []models.AppModel) error
 		if err := ioutil.WriteFile(path, []byte(compiled), 0666); err != nil {
 			return err
 		}
+
 		//redirect deployer to point to compiled app instead of domain app
 		context.RootPath = getAppPath(context)
 	}
@@ -133,6 +136,15 @@ func loadDomainEntities(context *models.DeployContext) ([]models.AppModel, error
 		}
 		return list, nil
 	}
+}
+
+func copyConfigfile(context *models.DeployContext) error {
+	configPath := fmt.Sprintf("%s/plataforma.json", context.GetWorkspace())
+	data, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(fmt.Sprintf("%s/plataforma.json", getAppPath(context)), data, 0666)
 }
 
 func getTemplatePath(context *models.DeployContext) string {
