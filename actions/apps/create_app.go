@@ -24,7 +24,7 @@ func CreateApp(app *models.App) (*dto.CreateAppResponse, error) {
 	if solution == nil {
 		return nil, fmt.Errorf("solution not found")
 	}
-	if ex := checkIfAppExist(app); ex != nil {
+	if ex := checkIfAppExist(app, solution); ex != nil {
 		resp := dto.CreateAppResponse{
 			GitRemote: env.GetSSHRemoteURL(solution.Name, app.Name),
 		}
@@ -44,13 +44,19 @@ func createGitRepo(solution, name string) error {
 	return git.CreateGitRepo(fmt.Sprintf("%s/%s/%s", env.GetGitServerReposPath(), solution, name))
 }
 
-func checkIfAppExist(app *models.App) error {
+func checkIfAppExist(app *models.App, solution *models.Solution) error {
 	list := make([]models.App, 1)
 	ex := apicore.FindByID(app.Metadata.Type, app.ID, &list)
 	if ex != nil {
 		return ex
 	}
 	if len(list) > 0 {
+		repoPath := fmt.Sprintf("%s/%s/%s", env.GetGitServerReposPath(), solution.Name, app.Name)
+		fd, err := os.Open(repoPath)
+		if err != nil {
+			return nil
+		}
+		fd.Close()
 		return fmt.Errorf("The app %s already exist", app.Name)
 	}
 	return nil
