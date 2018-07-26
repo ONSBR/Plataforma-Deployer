@@ -10,6 +10,7 @@ import (
 
 	"github.com/PMoneda/whaler"
 
+	"github.com/ONSBR/Plataforma-Deployer/builder"
 	"github.com/ONSBR/Plataforma-Deployer/sdk/apicore"
 	"github.com/ONSBR/Plataforma-Deployer/sdk/eventmanager"
 	"github.com/ONSBR/Plataforma-EventManager/domain"
@@ -31,6 +32,7 @@ type DeployContext struct {
 	Map        AppMap
 	MapName    string
 	MapContent string
+	Stack      string
 	Error      error
 }
 
@@ -167,6 +169,16 @@ func (context *DeployContext) Deploy(builder func(*DeployContext) error) error {
 		}
 	}
 
+	if ex := context.IdentifyStack(); ex != nil {
+		context.Error = ex
+		return ex
+	}
+
+	/*if ex := context.RunStackDefaultBuild(); ex != nil {
+		context.Error = ex
+		return ex
+	}*/
+
 	if ex := context.BuildImage(); ex != nil {
 		context.Error = ex
 		return ex
@@ -177,6 +189,29 @@ func (context *DeployContext) Deploy(builder func(*DeployContext) error) error {
 			context.Error = ex
 			return ex
 		}
+	}
+	return nil
+}
+
+func (context *DeployContext) IdentifyStack() error {
+	files, err := ioutil.ReadDir(context.GetWorkspace())
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if f.Name() == "package.json" {
+			context.Stack = "node"
+			return nil
+		}
+	}
+	context.Stack = "dotnet"
+	return nil
+}
+
+func (context *DeployContext) RunStackDefaultBuild() error {
+	builder := builder.GetBuilder(context.Stack)
+	if builder != nil {
+		return builder.Build(context.GetWorkspace())
 	}
 	return nil
 }
