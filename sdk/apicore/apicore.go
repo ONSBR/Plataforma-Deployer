@@ -39,6 +39,9 @@ func Query(filter Filter, response interface{}) error {
 	if err != nil {
 		return err
 	}
+	if resp.Status != 200 {
+		return fmt.Errorf(string(resp.Body))
+	}
 	err = json.Unmarshal(resp.Body, response)
 	if err != nil {
 		return err
