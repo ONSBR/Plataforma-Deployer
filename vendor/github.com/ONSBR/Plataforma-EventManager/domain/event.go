@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 //TODO maybe will be better put this events on apicore
@@ -45,6 +46,7 @@ func (s Events) Less(i, j int) bool {
 //Event define a basic platform event contract
 type Event struct {
 	Timestamp      string                 `json:"timestamp"`
+	ReferenceDate  string                 `json:"referenceDate"`
 	Branch         string                 `json:"branch"`
 	SystemID       string                 `json:"systemId,omitempty"`
 	Name           string                 `json:"name,omitempty"`
@@ -105,6 +107,10 @@ func (e *Event) ApplyDefaultFields() {
 	if e.Tag == "" {
 		u, _ := uuid.NewUUID()
 		e.Tag = u.String()
+		log.Info("setting new tag to event ", e.Name, " on scope ", e.Scope, " on branch ", e.Branch, " tag ", e.Tag)
+	}
+	if e.Scope == "execution" {
+		e.ReferenceDate = time.Now().Format(time.RFC3339)
 	}
 }
 

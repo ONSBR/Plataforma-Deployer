@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/ONSBR/Plataforma-EventManager"
   packages = ["domain"]
-  revision = "511618718072faf90e16b2e060954cb828a73927"
+  revision = "99667621da1e395c85a08c704cc24ca223b958c1"
 
 [[projects]]
   branch = "master"
